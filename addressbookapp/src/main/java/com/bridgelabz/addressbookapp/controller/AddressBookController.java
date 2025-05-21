@@ -3,9 +3,6 @@ package com.bridgelabz.addressbookapp.controller;
 import com.bridgelabz.addressbookapp.dto.ResponseDTO;
 import com.bridgelabz.addressbookapp.model.AddressBookData;
 import com.bridgelabz.addressbookapp.service.IAddressBookService;
-import com.bridgelabz.addressbookapp.dto.AddressBookDTO;
-import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,36 +19,41 @@ public class AddressBookController {
 
     @GetMapping("/")
     public ResponseEntity<ResponseDTO> getAllContacts() {
-        List<AddressBookData> dataList = addressBookService.getAllContacts();
-        ResponseDTO response = new ResponseDTO("Get All Contacts Success", dataList);
+        List<AddressBookData> data = addressBookService.getAllContacts();
+        ResponseDTO response = new ResponseDTO("Get All Contacts Success", data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<ResponseDTO> getContactById(@PathVariable int id) {
         AddressBookData data = addressBookService.getContactById(id);
-        ResponseDTO response = new ResponseDTO("Get Contact by ID Success", data);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        if (data != null) {
+            ResponseDTO response = new ResponseDTO("Get Contact by ID Success", data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            ResponseDTO response = new ResponseDTO("Contact Not Found", null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ResponseDTO> createContact(@Valid @RequestBody AddressBookDTO dto) {
-        int newId = addressBookService.getAllContacts().size() + 1;
-        AddressBookData data = new AddressBookData(newId, dto.getName(), dto.getAddress());
-        AddressBookData savedData = addressBookService.createContact(data);
-        ResponseDTO response = new ResponseDTO("Created Contact Successfully", savedData);
+    public ResponseEntity<ResponseDTO> createContact(@RequestBody AddressBookData contact) {
+        AddressBookData data = addressBookService.createContact(contact);
+        ResponseDTO response = new ResponseDTO("Created Contact Successfully", data);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ResponseDTO> updateContact(@PathVariable int id,
-                                                     @Valid @RequestBody AddressBookDTO dto) {
-        AddressBookData newData = new AddressBookData(id, dto.getName(), dto.getAddress());
-        AddressBookData updatedData = addressBookService.updateContact(id, newData);
-        ResponseDTO response = new ResponseDTO("Updated Contact Successfully", updatedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<ResponseDTO> updateContact(@PathVariable int id, @RequestBody AddressBookData contact) {
+        AddressBookData data = addressBookService.updateContact(id, contact);
+        if (data != null) {
+            ResponseDTO response = new ResponseDTO("Updated Contact Successfully", data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            ResponseDTO response = new ResponseDTO("Contact Not Found", null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
     }
-
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResponseDTO> deleteContact(@PathVariable int id) {

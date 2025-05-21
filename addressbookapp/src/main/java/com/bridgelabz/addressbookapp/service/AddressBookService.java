@@ -5,45 +5,47 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AddressBookService implements IAddressBookService {
 
-    private List<AddressBookData> contactList = new ArrayList<>();
+    private final List<AddressBookData> addressBookList = new ArrayList<>();
+    private int idCounter = 1;
 
     @Override
     public List<AddressBookData> getAllContacts() {
-        return contactList;
+        return addressBookList;
     }
 
     @Override
     public AddressBookData getContactById(int id) {
-        return contactList.stream()
+        Optional<AddressBookData> contact = addressBookList.stream()
                 .filter(data -> data.getId() == id)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
+        return contact.orElse(null);
     }
 
     @Override
-    public AddressBookData createContact(AddressBookData data) {
-        contactList.add(data);
-        return data;
+    public AddressBookData createContact(AddressBookData contact) {
+        contact.setId(idCounter++);
+        addressBookList.add(contact);
+        return contact;
     }
 
     @Override
-    public AddressBookData updateContact(int id, AddressBookData newData) {
-        for (int i = 0; i < contactList.size(); i++) {
-            if (contactList.get(i).getId() == id) {
-                AddressBookData updated = new AddressBookData(id, newData.getName(), newData.getAddress());
-                contactList.set(i, updated);
-                return updated;
-            }
+    public AddressBookData updateContact(int id, AddressBookData updatedContact) {
+        AddressBookData existingContact = getContactById(id);
+        if (existingContact != null) {
+            existingContact.setName(updatedContact.getName());
+            existingContact.setAddress(updatedContact.getAddress());
+            return existingContact;
         }
         return null;
     }
 
     @Override
     public void deleteContact(int id) {
-        contactList.removeIf(data -> data.getId() == id);
+        addressBookList.removeIf(contact -> contact.getId() == id);
     }
 }
