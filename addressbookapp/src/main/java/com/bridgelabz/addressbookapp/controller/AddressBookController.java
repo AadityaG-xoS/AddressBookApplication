@@ -3,6 +3,7 @@ package com.bridgelabz.addressbookapp.controller;
 import com.bridgelabz.addressbookapp.dto.ResponseDTO;
 import com.bridgelabz.addressbookapp.model.AddressBookData;
 import com.bridgelabz.addressbookapp.service.IAddressBookService;
+import com.bridgelabz.addressbookapp.dto.AddressBookDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/addressbook")
@@ -34,9 +34,9 @@ public class AddressBookController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ResponseDTO> createContact(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<ResponseDTO> createContact(@RequestBody AddressBookDTO dto) {
         int newId = addressBookService.getAllContacts().size() + 1;
-        AddressBookData data = new AddressBookData(newId, payload.get("name"), payload.get("address"));
+        AddressBookData data = new AddressBookData(newId, dto.getName(), dto.getAddress());
         AddressBookData savedData = addressBookService.createContact(data);
         ResponseDTO response = new ResponseDTO("Created Contact Successfully", savedData);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -44,12 +44,13 @@ public class AddressBookController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ResponseDTO> updateContact(@PathVariable int id,
-                                                     @RequestBody Map<String, String> payload) {
-        AddressBookData newData = new AddressBookData(id, payload.get("name"), payload.get("address"));
+                                                     @RequestBody AddressBookDTO dto) {
+        AddressBookData newData = new AddressBookData(id, dto.getName(), dto.getAddress());
         AddressBookData updatedData = addressBookService.updateContact(id, newData);
         ResponseDTO response = new ResponseDTO("Updated Contact Successfully", updatedData);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ResponseDTO> deleteContact(@PathVariable int id) {
